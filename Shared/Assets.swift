@@ -35,6 +35,7 @@ struct Assets {
 		static var starOpen: RSImage { RSImage(symbol: "star")! }
 		static var starClosed: RSImage { RSImage(symbol: "star.fill")! }
 		static var copy: RSImage? { RSImage(symbol: "document.on.document") }
+		static var speakerSlash: RSImage { RSImage(symbol: "speaker.slash")! }
 		static var markAllAsRead: RSImage { RSImage(named: "markAllAsRead")! }
 		static var nextUnread: RSImage { RSImage(symbol: "chevron.down.circle")! }
 

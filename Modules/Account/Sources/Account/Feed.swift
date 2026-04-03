@@ -160,6 +160,16 @@ import Articles
 		}
 	}
 
+	public var isMuted: Bool {
+		get {
+			settings.isMuted
+		}
+		set {
+			settings.isMuted = newValue
+			postUnreadCountDidChangeNotification()
+		}
+	}
+
 	public var externalID: String? {
 		get {
 			settings.externalID
@@ -221,7 +231,10 @@ import Articles
 
 	public var unreadCount: Int {
 		get {
-			account?.unreadCount(for: self) ?? 0
+			if isMuted {
+				return 0
+			}
+			return account?.unreadCount(for: self) ?? 0
 		}
 		set {
 			if unreadCount == newValue {

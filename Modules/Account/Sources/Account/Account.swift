@@ -243,6 +243,10 @@ public enum FetchType {
 		flattenedFeeds().feedIDs()
 	}
 
+	private var unmutedFlattenedFeedsIDs: Set<String> {
+		flattenedFeeds().filter { !$0.isMuted }.feedIDs()
+	}
+
 	private lazy var opmlFile = OPMLFile(filename: (dataFolder as NSString).appendingPathComponent("Subscriptions.opml"), account: self)
 	private let settings: AccountSettings
 	private let feedSettingsDatabase: FeedSettingsDatabase
@@ -813,7 +817,7 @@ public enum FetchType {
 	}
 
 	public func fetchUnreadCountForTodayAsync() async throws -> Int {
-		try await database.fetchUnreadCountForTodayAsync(feedIDs: flattenedFeedsIDs)
+		try await database.fetchUnreadCountForTodayAsync(feedIDs: unmutedFlattenedFeedsIDs)
 	}
 
 	public func fetchUnreadArticleIDsAsync() async throws -> Set<String> {
@@ -1153,11 +1157,11 @@ private extension Account {
 	// MARK: - Today Articles
 
 	func _fetchTodayArticles(limit: Int? = nil) throws -> Set<Article> {
-		try database.fetchTodayArticles(feedIDs: flattenedFeedsIDs, limit: limit)
+		try database.fetchTodayArticles(feedIDs: unmutedFlattenedFeedsIDs, limit: limit)
 	}
 
 	func _fetchTodayArticlesAsync(limit: Int? = nil) async throws -> Set<Article> {
-		try await database.fetchTodayArticlesAsync(feedIDs: flattenedFeedsIDs, limit: limit)
+		try await database.fetchTodayArticlesAsync(feedIDs: unmutedFlattenedFeedsIDs, limit: limit)
 	}
 
 	// MARK: - Container Articles
@@ -1177,7 +1181,7 @@ private extension Account {
 	}
 
 	func _fetchUnreadArticles(container: Container, limit: Int? = nil) throws -> Set<Article> {
-		let feeds = container.flattenedFeeds()
+		let feeds = container.flattenedFeeds().filter { !$0.isMuted }
 		let articles = try database.fetchUnreadArticles(feedIDs: feeds.feedIDs(), limit: limit)
 
 		// We don't validate limit queries because they, by definition, won't correctly match the
@@ -1190,7 +1194,7 @@ private extension Account {
 	}
 
 	func _fetchUnreadArticlesAsync(container: Container, limit: Int? = nil) async throws -> Set<Article> {
-		let feeds = container.flattenedFeeds()
+		let feeds = container.flattenedFeeds().filter { !$0.isMuted }
 		let articles = try await database.fetchUnreadArticlesAsync(feedIDs: feeds.feedIDs(), limit: limit)
 
 		// We don't validate limit queries because they, by definition, won't correctly match the

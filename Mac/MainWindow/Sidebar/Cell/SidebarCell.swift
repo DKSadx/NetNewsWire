@@ -49,6 +49,15 @@ final class SidebarCell: NSTableCellView {
 		}
 	}
 
+	var isMuted = false {
+		didSet {
+			if isMuted != oldValue {
+				mutedIndicatorView.isHidden = !isMuted
+				needsLayout = true
+			}
+		}
+	}
+
 	var name: String {
 		get {
 			return titleView.stringValue
@@ -74,6 +83,14 @@ final class SidebarCell: NSTableCellView {
 
 	private let faviconImageView = IconView()
 	private let unreadCountView = UnreadCountView(frame: NSRect.zero)
+	private let mutedIndicatorView: NSImageView = {
+		let imageView = NSImageView()
+		imageView.image = NSImage(systemSymbolName: "speaker.slash", accessibilityDescription: "Muted")
+		imageView.contentTintColor = NSColor.secondaryLabelColor
+		imageView.translatesAutoresizingMaskIntoConstraints = false
+		imageView.isHidden = true
+		return imageView
+	}()
 
 	override var backgroundStyle: NSView.BackgroundStyle {
 		didSet {
@@ -107,7 +124,7 @@ final class SidebarCell: NSTableCellView {
 		guard let cellAppearance = cellAppearance else {
 			return
 		}
-		let layout = SidebarCellLayout(appearance: cellAppearance, cellSize: bounds.size, shouldShowImage: shouldShowImage, textField: titleView, unreadCountView: unreadCountView)
+		let layout = SidebarCellLayout(appearance: cellAppearance, cellSize: bounds.size, shouldShowImage: shouldShowImage, textField: titleView, unreadCountView: unreadCountView, isMuted: isMuted)
 		layoutWith(layout)
 	}
 
@@ -127,6 +144,7 @@ private extension SidebarCell {
 		addSubviewAtInit(unreadCountView)
 		addSubviewAtInit(faviconImageView)
 		addSubviewAtInit(titleView)
+		addSubviewAtInit(mutedIndicatorView)
 	}
 
 	func addSubviewAtInit(_ view: NSView) {
@@ -138,6 +156,7 @@ private extension SidebarCell {
 		faviconImageView.setFrame(ifNotEqualTo: layout.faviconRect)
 		titleView.setFrame(ifNotEqualTo: layout.titleRect)
 		unreadCountView.setFrame(ifNotEqualTo: layout.unreadCountRect)
+		mutedIndicatorView.setFrame(ifNotEqualTo: layout.mutedIndicatorRect)
 	}
 
 	func updateFaviconImage() {

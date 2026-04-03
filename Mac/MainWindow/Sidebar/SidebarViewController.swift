@@ -245,7 +245,7 @@ extension Notification.Name {
 		guard let feed = note.object as? Feed, let key = note.userInfo?[Feed.SettingUserInfoKey] as? Feed.SettingKey else {
 			return
 		}
-		if key == .homePageURL || key == .faviconURL {
+		if key == .homePageURL || key == .faviconURL || key == .isMuted {
 			configureCellsForRepresentedObject(feed)
 		}
 	}
@@ -799,6 +799,7 @@ private extension SidebarViewController {
 		configureUnreadCount(cell, node)
 		configureFavicon(cell, node)
 		cell.shouldShowImage = node.representedObject is SmallIconProvider
+		cell.isMuted = (node.representedObject as? Feed)?.isMuted ?? false
 	}
 
 	func configureUnreadCount(_ cell: SidebarCell, _ node: Node) {
@@ -831,6 +832,10 @@ private extension SidebarViewController {
 	}
 
 	func unreadCountFor(_ node: Node) -> Int {
+		if let feed = node.representedObject as? Feed, feed.isMuted {
+			return 0
+		}
+
 		// If this node is the one and only selection,
 		// then the unread count comes from the timeline.
 		// This ensures that any transients in the timeline

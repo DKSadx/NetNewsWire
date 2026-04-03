@@ -234,6 +234,7 @@ final class TimelineViewController: NSViewController, UndoableCommandRunner, Unr
 		tableView.style = .inset
 
 		if !didRegisterForNotifications {
+			NotificationCenter.default.addObserver(self, selector: #selector(feedSettingDidChange(_:)), name: .feedSettingDidChange, object: nil)
 			NotificationCenter.default.addObserver(self, selector: #selector(statusesDidChange(_:)), name: .StatusesDidChange, object: nil)
 			NotificationCenter.default.addObserver(self, selector: #selector(feedIconDidBecomeAvailable(_:)), name: .feedIconDidBecomeAvailable, object: nil)
 			NotificationCenter.default.addObserver(self, selector: #selector(avatarDidBecomeAvailable(_:)), name: .AvatarDidBecomeAvailable, object: nil)
@@ -729,6 +730,15 @@ final class TimelineViewController: NSViewController, UndoableCommandRunner, Unr
 	}
 
 	@objc func containerChildrenDidChange(_ note: Notification) {
+		if representedObjectsContainsAnyPseudoFeed() || representedObjectsContainAnyFolder() {
+			fetchAndReplaceArticlesAsync()
+		}
+	}
+
+	@objc func feedSettingDidChange(_ note: Notification) {
+		guard let key = note.userInfo?[Feed.SettingUserInfoKey] as? Feed.SettingKey, key == .isMuted else {
+			return
+		}
 		if representedObjectsContainsAnyPseudoFeed() || representedObjectsContainAnyFolder() {
 			fetchAndReplaceArticlesAsync()
 		}

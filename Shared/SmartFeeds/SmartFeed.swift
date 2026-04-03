@@ -51,7 +51,15 @@ import Account
 	init(delegate: SmartFeedDelegate) {
 		self.delegate = delegate
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
+		NotificationCenter.default.addObserver(self, selector: #selector(feedSettingDidChange(_:)), name: .feedSettingDidChange, object: nil)
 		queueFetchUnreadCounts() // Fetch unread count at startup
+	}
+
+	@objc func feedSettingDidChange(_ note: Notification) {
+		guard let key = note.userInfo?[Feed.SettingUserInfoKey] as? Feed.SettingKey, key == .isMuted else {
+			return
+		}
+		queueFetchUnreadCounts()
 	}
 
 	@objc func unreadCountDidChange(_ note: Notification) {

@@ -15,8 +15,9 @@ import RSCore
 	let faviconRect: CGRect
 	let titleRect: CGRect
 	let unreadCountRect: CGRect
+	let mutedIndicatorRect: CGRect
 
-	init(appearance: SidebarCellAppearance, cellSize: NSSize, shouldShowImage: Bool, textField: NSTextField, unreadCountView: UnreadCountView) {
+	init(appearance: SidebarCellAppearance, cellSize: NSSize, shouldShowImage: Bool, textField: NSTextField, unreadCountView: UnreadCountView, isMuted: Bool = false) {
 		let bounds = NSRect(x: 0.0, y: 0.0, width: floor(cellSize.width), height: floor(cellSize.height))
 
 		var rFavicon = NSRect.zero
@@ -48,6 +49,18 @@ import RSCore
 			}
 		}
 		self.unreadCountRect = rUnread
+
+		var rMutedIndicator = NSRect.zero
+		if isMuted {
+			let iconSize = CGFloat(14)
+			rMutedIndicator = NSRect(x: bounds.maxX - iconSize, y: 0, width: iconSize, height: iconSize)
+			rMutedIndicator = rMutedIndicator.centeredVertically(in: bounds)
+			let textFieldMaxX = rMutedIndicator.minX - appearance.unreadCountMarginLeft
+			if rTextField.maxX > textFieldMaxX {
+				rTextField.size.width = max(0, textFieldMaxX - rTextField.minX)
+			}
+		}
+		self.mutedIndicatorRect = rMutedIndicator
 
 		if rTextField.maxX > bounds.maxX {
 			rTextField.size.width = bounds.maxX - rTextField.minX

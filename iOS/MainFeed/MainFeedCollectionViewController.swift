@@ -620,6 +620,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 			cell.feedTitle.text = sidebarItem.nameForDisplay
 			cell.unreadCount = sidebarItem.unreadCount
 			cell.indentationLevel = indentationLevel
+			cell.isMuted = (node.representedObject as? Feed)?.isMuted ?? false
 			configureIcon(cell, sidebarItem: sidebarItem)
 		}
 	}
@@ -726,6 +727,18 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 		}
 		if key == .homePageURL || key == .faviconURL {
 			configureCellsForRepresentedObject(feed)
+		}
+		if key == .isMuted {
+			for cell in collectionView.visibleCells {
+				guard let indexPath = collectionView.indexPath(for: cell),
+					  let sidebarItemNode = dataSource.itemIdentifier(for: indexPath),
+					  sidebarItemNode.node.representedObject === feed as AnyObject,
+					  let feedCell = cell as? MainFeedCollectionViewCell else {
+					continue
+				}
+				feedCell.isMuted = feed.isMuted
+				feedCell.unreadCount = feed.unreadCount
+			}
 		}
 	}
 
@@ -949,6 +962,10 @@ extension MainFeedCollectionViewController {
 				menuElements.append(UIMenu(title: "", options: .displayInline, children: [markAllAction]))
 			}
 
+			if let muteAction = self.toggleMuteAction(indexPath: indexPath) {
+				menuElements.append(UIMenu(title: "", options: .displayInline, children: [muteAction]))
+			}
+
 			if includeDeleteRename {
 				menuElements.append(UIMenu(title: "",
 										   options: .displayInline,
@@ -1158,6 +1175,20 @@ extension MainFeedCollectionViewController {
 		let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
 			self?.coordinator.showFeedInspector(for: feed)
 			completion(true)
+		}
+		return action
+	}
+
+	func toggleMuteAction(indexPath: IndexPath) -> UIAction? {
+		guard let feed = dataSource.itemIdentifier(for: indexPath)?.node.representedObject as? Feed else {
+			return nil
+		}
+
+		let title = feed.isMuted ?
+			NSLocalizedString("Unmute Feed", comment: "Unmute Feed") :
+			NSLocalizedString("Mute Feed", comment: "Mute Feed")
+		let action = UIAction(title: title, image: Assets.Images.speakerSlash) { _ in
+			feed.isMuted.toggle()
 		}
 		return action
 	}

@@ -142,6 +142,15 @@ extension SidebarViewController {
 		NotificationCenter.default.post(Notification(name: .DidUpdateFeedPreferencesFromContextMenu))
 	}
 
+	@objc func toggleMuteFromContextMenu(_ sender: Any?) {
+		guard let item = sender as? NSMenuItem,
+			  let feed = item.representedObject as? Feed else {
+			return
+		}
+		feed.isMuted.toggle()
+		NotificationCenter.default.post(Notification(name: .DidUpdateFeedPreferencesFromContextMenu))
+	}
+
 	nonisolated func showNotificationsNotEnabledAlert() {
 		DispatchQueue.main.async {
 			let alert = NSAlert()
@@ -238,6 +247,11 @@ private extension SidebarViewController {
 
 		articleExtractorMenuItem.state = feed.readerViewAlwaysEnabled ? .on : .off
 		menu.addItem(articleExtractorMenuItem)
+
+		let muteText = feed.isMuted ? NSLocalizedString("Unmute Feed", comment: "Unmute Feed") : NSLocalizedString("Mute Feed", comment: "Mute Feed")
+		let muteMenuItem = menuItem(muteText, #selector(toggleMuteFromContextMenu(_:)), feed, image: Assets.Images.speakerSlash)
+		muteMenuItem.state = feed.isMuted ? .on : .off
+		menu.addItem(muteMenuItem)
 
 		menu.addItem(NSMenuItem.separator())
 

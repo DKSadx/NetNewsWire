@@ -45,6 +45,21 @@ final class MainFeedCollectionViewCell: UICollectionViewCell {
 		}
 	}
 
+	var isMuted = false {
+		didSet {
+			mutedImageView.isHidden = !isMuted
+		}
+	}
+
+	private let mutedImageView: UIImageView = {
+		let imageView = UIImageView(image: UIImage(systemName: "speaker.slash"))
+		imageView.tintColor = .secondaryLabel
+		imageView.contentMode = .scaleAspectFit
+		imageView.isHidden = true
+		imageView.translatesAutoresizingMaskIntoConstraints = false
+		return imageView
+	}()
+
 	/// If the feed is contained in a folder, the indentation level is 1
 	/// and the cell's favicon leading constrain is increased. Otherwise,
 	/// it has the standard leading constraint.
@@ -63,7 +78,10 @@ final class MainFeedCollectionViewCell: UICollectionViewCell {
 	override var accessibilityLabel: String? {
 		get {
 			let name = feedTitle.text ?? ""
-			if unreadCount > 0 {
+			if isMuted {
+				let mutedLabel = NSLocalizedString("muted", comment: "Muted label for accessibility")
+				return "\(name) \(mutedLabel)"
+			} else if unreadCount > 0 {
 				let unreadLabel = NSLocalizedString("unread", comment: "Unread label for accessibility")
 				return "\(name) \(unreadCount) \(unreadLabel)"
 			} else {
@@ -82,6 +100,14 @@ final class MainFeedCollectionViewCell: UICollectionViewCell {
 			faviconView.isAccessibilityElement = false
 			faviconLeadingConstraint = faviconView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor)
 			faviconLeadingConstraint?.isActive = true
+
+			contentView.addSubview(mutedImageView)
+			NSLayoutConstraint.activate([
+				mutedImageView.centerYAnchor.constraint(equalTo: unreadCountLabel.centerYAnchor),
+				mutedImageView.trailingAnchor.constraint(equalTo: unreadCountLabel.trailingAnchor),
+				mutedImageView.widthAnchor.constraint(equalToConstant: 14),
+				mutedImageView.heightAnchor.constraint(equalToConstant: 14)
+			])
 		}
     }
 
@@ -103,10 +129,12 @@ final class MainFeedCollectionViewCell: UICollectionViewCell {
 											   weight: .semibold)
 			unreadCountLabel.textColor = Assets.Colors.primaryAccent
 			unreadCountLabel.font = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize, weight: .semibold)
+			mutedImageView.tintColor = Assets.Colors.primaryAccent
 		case (true, .phone):
 			backgroundConfig.backgroundColor = Assets.Colors.primaryAccent
 			feedTitle.textColor = .white
 			unreadCountLabel.textColor = .white
+			mutedImageView.tintColor = .white
 			if feedTitle.text == "All Unread" {
 				faviconView.tintColor = .white
 			}
@@ -115,6 +143,7 @@ final class MainFeedCollectionViewCell: UICollectionViewCell {
 			feedTitle.font = UIFont.preferredFont(forTextStyle: .body)
 			unreadCountLabel.font = UIFont.preferredFont(forTextStyle: .body)
 			unreadCountLabel.textColor = .secondaryLabel
+			mutedImageView.tintColor = .secondaryLabel
 			if traitCollection.userInterfaceIdiom == .phone {
 				if feedTitle.text == "All Unread" {
 					if let preferredColor = iconImage?.preferredColor {

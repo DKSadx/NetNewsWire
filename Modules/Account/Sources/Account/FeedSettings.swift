@@ -78,6 +78,15 @@ import Articles
 		}
 	}
 
+	var isMuted = false {
+		didSet {
+			if isMuted != oldValue {
+				database.setBool(isMuted, for: feedURL, column: .isMuted)
+				postSettingDidChange(.isMuted)
+			}
+		}
+	}
+
 	var authors: [Author]? {
 		didSet {
 			if authors != oldValue {
@@ -161,6 +170,7 @@ import Articles
 		self.contentHash = row.contentHash
 		self.newArticleNotificationsEnabled = row.newArticleNotificationsEnabled
 		self.readerViewAlwaysEnabled = row.readerViewAlwaysEnabled
+		self.isMuted = row.isMuted
 		self.authors = row.authors
 		self.conditionalGetInfo = row.conditionalGetInfo
 		self.conditionalGetInfoDate = row.conditionalGetInfoDate
